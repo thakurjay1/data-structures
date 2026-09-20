@@ -383,6 +383,89 @@ Pivot reaches correct position
      ↓
 Recursively sort both sides
 ```
+---
+
+## Partition Condition Analysis
+
+In the partition logic:
+
+```java
+while (i <= high - 1 && nums[i] <= pivot) {
+    i++;
+}
+
+while (j >= low + 1 && nums[j] > pivot) {
+    j--;
+}
+```
+
+### Why `high - 1`?
+
+`high` is the last valid index. We use `high - 1` because after `i++`, `i` can reach `high` but will not move beyond it.
+
+```text
+i = high - 1  →  i++  →  i = high   ✅
+i = high      →  i++  →  i = high+1 ❌
+```
+
+Using `i <= high` is also array-safe **when the boundary check comes first**, but `high - 1` matches the boundary logic of this partition implementation.
+
+### Why `low + 1`?
+
+The pivot is stored at `nums[low]`:
+
+```java
+int pivot = nums[low];
+```
+
+Therefore, `j` should search from `high` down to `low + 1` and should not unnecessarily move onto the pivot itself.
+
+```text
+low       low+1
+ ↓           ↓
+[pivot,     ...]
+            ↑
+          j starts searching here
+```
+
+### Why `nums[i] <= pivot`?
+
+The partition is designed as:
+
+```text
+        <= pivot | pivot | > pivot
+```
+
+Therefore, elements equal to the pivot are allowed to remain on the left side.
+
+The two pointer conditions work together:
+
+```java
+nums[i] <= pivot   // i skips elements already on the left
+nums[j] > pivot    // j skips elements already on the right
+```
+
+When both stop, they have found elements that are on the wrong side, so they can be swapped.
+
+### Important: Check the Boundary First
+
+Prefer:
+
+```java
+while (i <= high - 1 && nums[i] <= pivot)
+```
+
+over:
+
+```java
+while (nums[i] <= pivot && i <= high - 1)
+```
+
+because Java evaluates conditions from left to right. Checking the boundary first ensures that `nums[i]` is accessed only after the index has been validated.
+
+
+> `high` and `low` are valid indices. `high - 1` and `low + 1` are used here because of the specific partition logic, not because `high` or `low` are invalid.
+
 
 ---
 
